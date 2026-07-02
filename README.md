@@ -74,3 +74,7 @@ pnpm preview
 - Optional embedded Google Street View preview with `VITE_GOOGLE_MAPS_API_KEY`.
 - More precise along-route filtering for OSM cues using map-matching instead of nearest recorded GPX point.
 - Saved notes and custom exam reminders per route point.
+
+## License
+
+This project is licensed under the GNU Affero General Public License v3.0 or later (`AGPL-3.0-or-later`). See [LICENSE](LICENSE) for details.
