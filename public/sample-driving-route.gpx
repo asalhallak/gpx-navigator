@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="gpx-driving-prep">
+  <metadata>
+    <name>Sample training loop</name>
+  </metadata>
+  <trk>
+    <name>Sample training loop</name>
+    <trkseg>
+      <trkpt lat="52.520080" lon="13.404954">
+        <time>2026-07-02T08:00:00Z</time>
+      </trkpt>
+      <trkpt lat="52.519130" lon="13.408260">
+        <time>2026-07-02T08:02:00Z</time>
+      </trkpt>
+      <trkpt lat="52.517260" lon="13.407120">
+        <time>2026-07-02T08:04:00Z</time>
+      </trkpt>
+      <trkpt lat="52.516420" lon="13.402410">
+        <time>2026-07-02T08:06:00Z</time>
+      </trkpt>
+      <trkpt lat="52.518410" lon="13.399780">
+        <time>2026-07-02T08:08:00Z</time>
+      </trkpt>
+      <trkpt lat="52.520080" lon="13.404954">
+        <time>2026-07-02T08:10:00Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
+  <wpt lat="52.517260" lon="13.407120">
+    <name>Intersection practice</name>
+    <desc>Check priority and pedestrian crossings</desc>
+  </wpt>
+  <wpt lat="52.518410" lon="13.399780">
+    <name>Turn rehearsal</name>
+    <desc>Mirror, signal, shoulder check</desc>
+  </wpt>
+</gpx>
