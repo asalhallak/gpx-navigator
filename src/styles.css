@@ -329,10 +329,6 @@ button:disabled {
   font-weight: 700;
 }
 
-.inline-status svg {
-  animation: spin 1.1s linear infinite;
-}
-
 .route-list {
   display: grid;
   gap: 10px;

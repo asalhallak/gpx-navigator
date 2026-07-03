@@ -88,6 +88,46 @@ describe('overpass helpers', () => {
       'road_type',
     ])
     expect(insights.find((insight) => insight.kind === 'crossing')?.detail).toBe('zebra')
+    expect(insights[0].routeProgressMeters).toBeGreaterThan(100)
+    expect(insights[1].routeProgressMeters).toBeGreaterThan(
+      insights[0].routeProgressMeters,
+    )
     expect(insights.some((insight) => insight.id.includes('node-5'))).toBe(false)
+  })
+
+  it('orders road cues by route progress before distance from the route', () => {
+    const insights = parseOverpassInsights(
+      {
+        elements: [
+          {
+            type: 'node',
+            id: 1,
+            lat: 0,
+            lon: 0.008,
+            tags: { highway: 'traffic_signals' },
+          },
+          {
+            type: 'node',
+            id: 2,
+            lat: 0.0002,
+            lon: 0.002,
+            tags: { highway: 'crossing' },
+          },
+        ],
+      },
+      route,
+      { maxDistanceMeters: 80 },
+    )
+
+    expect(insights.map((insight) => insight.id)).toEqual([
+      'node-2-crossing',
+      'node-1-traffic_signal',
+    ])
+    expect(insights[0].routeProgressMeters).toBeLessThan(
+      insights[1].routeProgressMeters,
+    )
+    expect(insights[0].distanceFromRouteMeters).toBeGreaterThan(
+      insights[1].distanceFromRouteMeters,
+    )
   })
 })

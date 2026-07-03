@@ -27,6 +27,16 @@ type ParseOptions = {
   maxDistanceMeters?: number
 }
 
+type NearestRouteMatch = {
+  distanceMeters: number
+  routeProgressMeters: number
+}
+
+type SegmentMatch = {
+  distanceMeters: number
+  projection: number
+}
+
 export async function fetchRoadInsights(
   route: ImportedRoute,
   signal?: AbortSignal,
@@ -87,12 +97,12 @@ export function parseOverpassInsights(
       return
     }
 
-    const distanceFromRouteMeters = getDistanceFromRouteMeters(coordinate, route.segments)
-    if (distanceFromRouteMeters > maxDistanceMeters) {
+    const nearestRouteMatch = getNearestRouteMatch(coordinate, route.segments)
+    if (nearestRouteMatch.distanceMeters > maxDistanceMeters) {
       return
     }
 
-    getInsightCandidates(element, tags, coordinate, distanceFromRouteMeters).forEach(
+    getInsightCandidates(element, tags, coordinate, nearestRouteMatch).forEach(
       (insight) => {
         const dedupeKey = createInsightDedupeKey(insight)
         if (seen.has(dedupeKey)) {
@@ -106,7 +116,11 @@ export function parseOverpassInsights(
   })
 
   return insights
-    .sort((a, b) => a.distanceFromRouteMeters - b.distanceFromRouteMeters)
+    .sort(
+      (a, b) =>
+        a.routeProgressMeters - b.routeProgressMeters ||
+        a.distanceFromRouteMeters - b.distanceFromRouteMeters,
+    )
     .slice(0, MAX_INSIGHTS)
 }
 
@@ -114,12 +128,13 @@ function getInsightCandidates(
   element: OverpassElement,
   tags: Record<string, string>,
   coordinate: RoutePoint,
-  distanceFromRouteMeters: number,
+  nearestRouteMatch: NearestRouteMatch,
 ): RoadInsight[] {
   const base = {
     lat: coordinate.lat,
     lon: coordinate.lon,
-    distanceFromRouteMeters,
+    distanceFromRouteMeters: nearestRouteMatch.distanceMeters,
+    routeProgressMeters: nearestRouteMatch.routeProgressMeters,
     source: 'osm' as const,
   }
   const candidates: RoadInsight[] = []
@@ -192,7 +207,7 @@ function createInsight(
   detail: string | undefined,
   base: Pick<
     RoadInsight,
-    'lat' | 'lon' | 'distanceFromRouteMeters' | 'source'
+    'lat' | 'lon' | 'distanceFromRouteMeters' | 'routeProgressMeters' | 'source'
   >,
 ): RoadInsight {
   return {
@@ -225,32 +240,71 @@ function getElementCoordinate(element: OverpassElement): RoutePoint | undefined 
   return undefined
 }
 
-function getDistanceFromRouteMeters(point: RoutePoint, routeSegments: RoutePoint[][]): number {
-  return routeSegments.reduce((nearestRouteDistance, segment) => {
+function getNearestRouteMatch(
+  point: RoutePoint,
+  routeSegments: RoutePoint[][],
+): NearestRouteMatch {
+  let routeProgressMeters = 0
+  let nearestRouteMatch: NearestRouteMatch = {
+    distanceMeters: Number.POSITIVE_INFINITY,
+    routeProgressMeters: 0,
+  }
+
+  routeSegments.forEach((segment) => {
     if (segment.length === 0) {
-      return nearestRouteDistance
+      return
     }
 
     if (segment.length === 1) {
-      return Math.min(nearestRouteDistance, calculatePointDistance(point, segment[0]))
+      const distanceMeters = calculatePointDistance(point, segment[0])
+      nearestRouteMatch = getCloserRouteMatch(nearestRouteMatch, {
+        distanceMeters,
+        routeProgressMeters,
+      })
+      return
     }
 
-    const nearestSegmentDistance = segment.slice(1).reduce((nearestDistance, to, index) => {
-      return Math.min(
-        nearestDistance,
-        calculatePointToSegmentDistance(point, segment[index], to),
-      )
-    }, Number.POSITIVE_INFINITY)
+    for (let index = 1; index < segment.length; index += 1) {
+      const from = segment[index - 1]
+      const to = segment[index]
+      const segmentDistanceMeters = calculatePointDistance(from, to)
+      const segmentMatch = calculatePointToSegmentMatch(point, from, to)
 
-    return Math.min(nearestRouteDistance, nearestSegmentDistance)
-  }, Number.POSITIVE_INFINITY)
+      nearestRouteMatch = getCloserRouteMatch(nearestRouteMatch, {
+        distanceMeters: segmentMatch.distanceMeters,
+        routeProgressMeters:
+          routeProgressMeters + segmentDistanceMeters * segmentMatch.projection,
+      })
+      routeProgressMeters += segmentDistanceMeters
+    }
+  })
+
+  return nearestRouteMatch
 }
 
-function calculatePointToSegmentDistance(
+function getCloserRouteMatch(
+  currentMatch: NearestRouteMatch,
+  candidateMatch: NearestRouteMatch,
+): NearestRouteMatch {
+  if (candidateMatch.distanceMeters < currentMatch.distanceMeters) {
+    return candidateMatch
+  }
+
+  if (
+    candidateMatch.distanceMeters === currentMatch.distanceMeters &&
+    candidateMatch.routeProgressMeters < currentMatch.routeProgressMeters
+  ) {
+    return candidateMatch
+  }
+
+  return currentMatch
+}
+
+function calculatePointToSegmentMatch(
   point: RoutePoint,
   from: RoutePoint,
   to: RoutePoint,
-): number {
+): SegmentMatch {
   const projectedPoint = projectPoint(point, point)
   const projectedFrom = projectPoint(from, point)
   const projectedTo = projectPoint(to, point)
@@ -259,7 +313,10 @@ function calculatePointToSegmentDistance(
   const segmentLengthSquared = segmentX * segmentX + segmentY * segmentY
 
   if (segmentLengthSquared === 0) {
-    return calculatePointDistance(point, from)
+    return {
+      distanceMeters: calculatePointDistance(point, from),
+      projection: 0,
+    }
   }
 
   const rawProjection =
@@ -270,7 +327,10 @@ function calculatePointToSegmentDistance(
   const closestX = projectedFrom.x + projection * segmentX
   const closestY = projectedFrom.y + projection * segmentY
 
-  return Math.hypot(projectedPoint.x - closestX, projectedPoint.y - closestY)
+  return {
+    distanceMeters: Math.hypot(projectedPoint.x - closestX, projectedPoint.y - closestY),
+    projection,
+  }
 }
 
 function projectPoint(point: RoutePoint, origin: RoutePoint): { x: number; y: number } {

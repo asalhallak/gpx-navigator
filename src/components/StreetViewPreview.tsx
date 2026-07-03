@@ -43,6 +43,7 @@ type GoogleMapsGlobal = {
 declare global {
   interface Window {
     google?: GoogleMapsGlobal
+    gm_authFailure?: () => void
   }
 }
 
@@ -101,7 +102,11 @@ export default function StreetViewPreview({ point, heading }: StreetViewPreviewP
 
         setStatus('ready')
       })
-      .catch(() => setStatus('error'))
+      .catch(() => {
+        if (!isCancelled) {
+          setStatus('error')
+        }
+      })
 
     return () => {
       isCancelled = true
@@ -134,7 +139,7 @@ export default function StreetViewPreview({ point, heading }: StreetViewPreviewP
   )
 }
 
-function loadGoogleMaps(apiKey: string): Promise<void> {
+export function loadGoogleMaps(apiKey: string): Promise<void> {
   if (window.google?.maps.StreetViewPanorama) {
     return Promise.resolve()
   }
@@ -146,18 +151,67 @@ function loadGoogleMaps(apiKey: string): Promise<void> {
 
   const promise = new Promise<void>((resolve, reject) => {
     const script = document.createElement('script')
-    const params = new URLSearchParams({
-      key: apiKey,
-    })
+    const previousAuthFailure = window.gm_authFailure
+    let isSettled = false
 
-    script.src = `https://maps.googleapis.com/maps/api/js?${params.toString()}`
+    function cleanup() {
+      if (window.gm_authFailure === handleAuthFailure) {
+        if (previousAuthFailure) {
+          window.gm_authFailure = previousAuthFailure
+        } else {
+          delete window.gm_authFailure
+        }
+      }
+    }
+
+    function rejectLoad(error: Error) {
+      if (isSettled) {
+        return
+      }
+
+      isSettled = true
+      scriptPromises.delete(apiKey)
+      cleanup()
+      reject(error)
+    }
+
+    function resolveLoad() {
+      if (isSettled) {
+        return
+      }
+
+      if (!window.google?.maps.StreetViewPanorama) {
+        rejectLoad(new Error('Google Maps Street View could not be loaded.'))
+        return
+      }
+
+      isSettled = true
+      cleanup()
+      resolve()
+    }
+
+    function handleAuthFailure() {
+      rejectLoad(new Error('Google Maps authentication failed.'))
+    }
+
+    window.gm_authFailure = handleAuthFailure
+    script.src = createGoogleMapsScriptUrl(apiKey)
     script.async = true
     script.defer = true
-    script.onload = () => resolve()
-    script.onerror = () => reject(new Error('Google Maps could not be loaded.'))
+    script.onload = resolveLoad
+    script.onerror = () => rejectLoad(new Error('Google Maps could not be loaded.'))
     document.head.append(script)
   })
 
   scriptPromises.set(apiKey, promise)
   return promise
+}
+
+export function createGoogleMapsScriptUrl(apiKey: string): string {
+  const params = new URLSearchParams({
+    key: apiKey,
+    loading: 'async',
+  })
+
+  return `https://maps.googleapis.com/maps/api/js?${params.toString()}`
 }

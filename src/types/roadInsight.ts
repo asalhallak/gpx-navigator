@@ -15,5 +15,6 @@ export type RoadInsight = {
   lat: number
   lon: number
   distanceFromRouteMeters: number
+  routeProgressMeters: number
   source: 'osm'
 }
