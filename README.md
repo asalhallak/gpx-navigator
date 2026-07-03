@@ -2,6 +2,8 @@
 
 A focused web app for reviewing practical driving exam training routes from GPX files.
 
+[Open the live app](https://asalhallak.github.io/gpx-navigator/)
+
 ## Tech Stack
 
 - Vite + React + TypeScript for a small, fast single-page app.
@@ -17,7 +19,7 @@ A focused web app for reviewing practical driving exam training routes from GPX 
 - Show start, end, and waypoint markers.
 - Summarize route name, distance, point count, duration, and import time.
 - Save imported routes locally in the browser.
-- Simulate driving the route with car mode, play/pause, step controls, map following, and route progress.
+- Simulate driving the route with car mode, play/pause, persistent play speed, step controls, map following, and route progress.
 - Open the current simulated position in Google Street View for real-road preview.
 - Load best-effort OpenStreetMap road cues for signals, crossings, roundabouts, speed-limit tags, priority controls, signs, and road types.
 

@@ -7,6 +7,7 @@ import RouteMap from './components/RouteMap'
 import RouteSummary from './components/RouteSummary'
 import RouteUploader from './components/RouteUploader'
 import { useRoadInsights } from './hooks/useRoadInsights'
+import { getStoredPlaySpeed, savePlaySpeed, type PlaySpeed } from './lib/appSettings'
 import { GpxParseError, parseGpxRoute } from './lib/gpx'
 import { clearRoutes, deleteRoute, getStoredRoutes, saveRoute } from './lib/routeStore'
 import {
@@ -21,6 +22,8 @@ type Notice = {
   message: string
 }
 
+const SIMULATION_STEP_INTERVAL_MS = 900
+
 export default function App() {
   const [routes, setRoutes] = useState<ImportedRoute[]>([])
   const [activeRouteId, setActiveRouteId] = useState<string>()
@@ -28,6 +31,7 @@ export default function App() {
   const [isImporting, setIsImporting] = useState(false)
   const [simulationIndex, setSimulationIndex] = useState(0)
   const [isSimulationPlaying, setIsSimulationPlaying] = useState(false)
+  const [playSpeed, setPlaySpeed] = useState<PlaySpeed>(() => getStoredPlaySpeed())
   const [followSimulation, setFollowSimulation] = useState(true)
   const [notice, setNotice] = useState<Notice>()
 
@@ -70,10 +74,10 @@ export default function App() {
       setSimulationIndex((currentIndex) =>
         clampSimulationIndex(currentIndex + 1, simulationTrack),
       )
-    }, 900)
+    }, SIMULATION_STEP_INTERVAL_MS / playSpeed)
 
     return () => window.clearInterval(intervalId)
-  }, [isSimulationPlaying, simulationTrack])
+  }, [isSimulationPlaying, playSpeed, simulationTrack])
 
   useEffect(() => {
     if (isSimulationPlaying && simulationIndex >= lastSimulationIndex) {
@@ -165,6 +169,15 @@ export default function App() {
     setSimulationIndex(0)
   }
 
+  function handlePlaySpeedChange(nextPlaySpeed: PlaySpeed) {
+    setPlaySpeed(nextPlaySpeed)
+    savePlaySpeed(nextPlaySpeed)
+  }
+
+  function handleOpenStreetView() {
+    setIsSimulationPlaying(false)
+  }
+
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -211,12 +224,15 @@ export default function App() {
               track={simulationTrack}
               currentIndex={simulationIndex}
               isPlaying={isSimulationPlaying}
+              playSpeed={playSpeed}
               followMap={followSimulation}
               onTogglePlay={handleToggleSimulation}
               onStep={handleSimulationStep}
               onChangeIndex={handleSimulationIndexChange}
               onReset={handleSimulationReset}
+              onPlaySpeedChange={handlePlaySpeedChange}
               onFollowMapChange={setFollowSimulation}
+              onOpenStreetView={handleOpenStreetView}
             />
           </section>
 

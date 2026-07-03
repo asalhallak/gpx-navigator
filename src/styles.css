@@ -33,7 +33,8 @@ body,
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -588,6 +589,13 @@ button:disabled {
 
 .simulator-toolbar {
   justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.simulator-toolbar__group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .street-view-preview {
@@ -653,6 +661,26 @@ button:disabled {
   border-color: #3f8f5a;
   background: var(--route-soft);
   color: var(--route);
+}
+
+.speed-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  color: #3d4b41;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.speed-control select {
+  min-height: 34px;
+  padding: 0 28px 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-strong);
+  color: #26372b;
+  font-weight: 900;
 }
 
 .roadmap-strip {
@@ -830,10 +858,21 @@ button:disabled {
     flex-direction: column;
   }
 
+  .simulator-toolbar__group {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .simulator-toolbar .button,
   .toggle-control,
-  .toggle-control span {
+  .toggle-control span,
+  .speed-control,
+  .speed-control select {
     width: 100%;
     justify-content: center;
+  }
+
+  .speed-control {
+    justify-content: space-between;
   }
 }

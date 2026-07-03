@@ -8,6 +8,11 @@ import {
   StepBack,
   StepForward,
 } from 'lucide-react'
+import {
+  parsePlaySpeed,
+  PLAY_SPEEDS,
+  type PlaySpeed,
+} from '../lib/appSettings'
 import { formatDistance } from '../lib/format'
 import {
   createStreetViewUrl,
@@ -22,24 +27,30 @@ type NavigationSimulatorProps = {
   track: SimulationTrack
   currentIndex: number
   isPlaying: boolean
+  playSpeed: PlaySpeed
   followMap: boolean
   onTogglePlay: () => void
   onStep: (delta: number) => void
   onChangeIndex: (index: number) => void
   onReset: () => void
+  onPlaySpeedChange: (playSpeed: PlaySpeed) => void
   onFollowMapChange: (followMap: boolean) => void
+  onOpenStreetView: () => void
 }
 
 export default function NavigationSimulator({
   track,
   currentIndex,
   isPlaying,
+  playSpeed,
   followMap,
   onTogglePlay,
   onStep,
   onChangeIndex,
   onReset,
+  onPlaySpeedChange,
   onFollowMapChange,
+  onOpenStreetView,
 }: NavigationSimulatorProps) {
   const progress = getSimulationProgress(track, currentIndex)
   const point = getSimulationPoint(track, currentIndex)
@@ -128,17 +139,35 @@ export default function NavigationSimulator({
       </dl>
 
       <div className="simulator-toolbar">
-        <label className="toggle-control">
-          <input
-            type="checkbox"
-            checked={followMap}
-            onChange={(event) => onFollowMapChange(event.currentTarget.checked)}
-          />
-          <span>
-            <LocateFixed size={15} aria-hidden="true" />
-            Follow
-          </span>
-        </label>
+        <div className="simulator-toolbar__group">
+          <label className="toggle-control">
+            <input
+              type="checkbox"
+              checked={followMap}
+              onChange={(event) => onFollowMapChange(event.currentTarget.checked)}
+            />
+            <span>
+              <LocateFixed size={15} aria-hidden="true" />
+              Follow
+            </span>
+          </label>
+
+          <label className="speed-control">
+            <span>Play speed</span>
+            <select
+              value={playSpeed}
+              onChange={(event) =>
+                onPlaySpeedChange(parsePlaySpeed(event.currentTarget.value))
+              }
+            >
+              {PLAY_SPEEDS.map((speed) => (
+                <option key={speed} value={speed}>
+                  x{speed}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
 
         {point ? (
           <a
@@ -146,6 +175,7 @@ export default function NavigationSimulator({
             href={createStreetViewUrl(point, heading)}
             target="_blank"
             rel="noreferrer"
+            onClick={onOpenStreetView}
           >
             <ExternalLink size={15} aria-hidden="true" />
             Street View
