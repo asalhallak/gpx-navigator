@@ -1,20 +1,47 @@
 import { useEffect, useMemo } from 'react'
 import L, { type LatLngExpression } from 'leaflet'
 import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from 'react-leaflet'
-import { MapPin, Navigation } from 'lucide-react'
+import {
+  Map as MapIcon,
+  MapPin,
+  Navigation,
+  Satellite,
+  type LucideIcon,
+} from 'lucide-react'
 import type { RoadInsight, RoadInsightKind } from '../types/roadInsight'
 import type { ImportedRoute, RoutePoint } from '../types/route'
 import { getRouteEnd, getRouteStart } from '../lib/routeStats'
 import { formatDistance } from '../lib/format'
+import type { MapType } from '../lib/appSettings'
 
 type RouteMapProps = {
   route?: ImportedRoute
   simulationPoint?: RoutePoint
   followSimulation?: boolean
   roadInsights?: RoadInsight[]
+  mapType: MapType
+  onMapTypeChange: (mapType: MapType) => void
 }
 
 const defaultCenter: LatLngExpression = [51.1657, 10.4515]
+
+const mapLayerOptions: Record<MapType, { attribution: string; url: string }> = {
+  road: {
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  },
+  satellite: {
+    attribution:
+      'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  },
+}
+
+const mapTypeOptions: Array<{ icon: LucideIcon; label: string; value: MapType }> = [
+  { icon: MapIcon, label: 'Road', value: 'road' },
+  { icon: Satellite, label: 'Satellite', value: 'satellite' },
+]
 
 const startIcon = L.divIcon({
   className: 'route-marker route-marker--start',
@@ -59,7 +86,10 @@ export default function RouteMap({
   simulationPoint,
   followSimulation = true,
   roadInsights = [],
+  mapType,
+  onMapTypeChange,
 }: RouteMapProps) {
+  const mapLayer = mapLayerOptions[mapType]
   const start = route ? getRouteStart(route) : undefined
   const end = route ? getRouteEnd(route) : undefined
   const segments = useMemo(
@@ -71,8 +101,9 @@ export default function RouteMap({
     <section className="map-shell" aria-label="Route map">
       <MapContainer center={defaultCenter} zoom={6} scrollWheelZoom className="route-map">
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          key={mapType}
+          attribution={mapLayer.attribution}
+          url={mapLayer.url}
         />
 
         {route ? (
@@ -140,6 +171,21 @@ export default function RouteMap({
           </>
         ) : null}
       </MapContainer>
+
+      <div className="map-type-control" role="group" aria-label="Map type">
+        {mapTypeOptions.map(({ icon: Icon, label, value }) => (
+          <button
+            key={value}
+            className="map-type-control__button"
+            type="button"
+            aria-pressed={mapType === value}
+            onClick={() => onMapTypeChange(value)}
+          >
+            <Icon size={15} aria-hidden="true" />
+            <span>{label}</span>
+          </button>
+        ))}
+      </div>
 
       <div className="map-status" aria-live="polite">
         {route ? (

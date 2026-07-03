@@ -7,7 +7,14 @@ import RouteMap from './components/RouteMap'
 import RouteSummary from './components/RouteSummary'
 import RouteUploader from './components/RouteUploader'
 import { useRoadInsights } from './hooks/useRoadInsights'
-import { getStoredPlaySpeed, savePlaySpeed, type PlaySpeed } from './lib/appSettings'
+import {
+  getStoredMapType,
+  getStoredPlaySpeed,
+  saveMapType,
+  savePlaySpeed,
+  type MapType,
+  type PlaySpeed,
+} from './lib/appSettings'
 import { GpxParseError, parseGpxRoute } from './lib/gpx'
 import { clearRoutes, deleteRoute, getStoredRoutes, saveRoute } from './lib/routeStore'
 import {
@@ -32,6 +39,7 @@ export default function App() {
   const [simulationIndex, setSimulationIndex] = useState(0)
   const [isSimulationPlaying, setIsSimulationPlaying] = useState(false)
   const [playSpeed, setPlaySpeed] = useState<PlaySpeed>(() => getStoredPlaySpeed())
+  const [mapType, setMapType] = useState<MapType>(() => getStoredMapType())
   const [followSimulation, setFollowSimulation] = useState(true)
   const [notice, setNotice] = useState<Notice>()
 
@@ -174,6 +182,11 @@ export default function App() {
     savePlaySpeed(nextPlaySpeed)
   }
 
+  function handleMapTypeChange(nextMapType: MapType) {
+    setMapType(nextMapType)
+    saveMapType(nextMapType)
+  }
+
   function handleOpenStreetView() {
     setIsSimulationPlaying(false)
   }
@@ -292,6 +305,8 @@ export default function App() {
           simulationPoint={simulationPoint}
           followSimulation={followSimulation}
           roadInsights={roadInsights.insights}
+          mapType={mapType}
+          onMapTypeChange={handleMapTypeChange}
         />
       </main>
     </div>

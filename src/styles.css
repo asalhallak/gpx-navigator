@@ -699,6 +699,48 @@ button:disabled {
   min-height: calc(100vh - 78px);
 }
 
+.map-type-control {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 500;
+  display: inline-flex;
+  gap: 4px;
+  max-width: calc(100% - 88px);
+  padding: 4px;
+  border: 1px solid rgb(23 33 27 / 12%);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 92%);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
+}
+
+.map-type-control__button {
+  min-width: 0;
+  min-height: 34px;
+  border: 0;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 10px;
+  background: transparent;
+  color: #34443a;
+  font-size: 0.84rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.map-type-control__button:hover {
+  background: #eef3ec;
+}
+
+.map-type-control__button[aria-pressed="true"] {
+  background: var(--route);
+  color: #ffffff;
+}
+
 .map-status {
   position: absolute;
   left: 16px;
@@ -847,6 +889,16 @@ button:disabled {
     bottom: 10px;
     justify-content: center;
     flex-wrap: wrap;
+  }
+
+  .map-type-control {
+    top: 10px;
+    right: 10px;
+    max-width: calc(100% - 74px);
+  }
+
+  .map-type-control__button {
+    padding: 0 8px;
   }
 
   .simulator-toolbar {

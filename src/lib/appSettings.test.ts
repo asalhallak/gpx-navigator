@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
+  DEFAULT_MAP_TYPE,
   DEFAULT_PLAY_SPEED,
+  getStoredMapType,
   getStoredPlaySpeed,
+  saveMapType,
   savePlaySpeed,
 } from './appSettings'
 
@@ -30,5 +33,27 @@ describe('app settings', () => {
     savePlaySpeed(10)
 
     expect(window.localStorage.getItem('gpx-navigator:play-speed')).toBe('10')
+  })
+
+  it('returns road when no map type is stored', () => {
+    expect(getStoredMapType()).toBe(DEFAULT_MAP_TYPE)
+  })
+
+  it('returns a saved valid map type', () => {
+    window.localStorage.setItem('gpx-navigator:map-type', 'satellite')
+
+    expect(getStoredMapType()).toBe('satellite')
+  })
+
+  it('falls back to road when the stored map type is invalid', () => {
+    window.localStorage.setItem('gpx-navigator:map-type', 'terrain')
+
+    expect(getStoredMapType()).toBe(DEFAULT_MAP_TYPE)
+  })
+
+  it('persists the selected map type', () => {
+    saveMapType('satellite')
+
+    expect(window.localStorage.getItem('gpx-navigator:map-type')).toBe('satellite')
   })
 })
