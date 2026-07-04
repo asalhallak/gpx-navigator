@@ -115,7 +115,7 @@ export default function RouteMap({
                 key={`${route.id}-${index}`}
                 positions={segment}
                 pathOptions={{
-                  color: '#166534',
+                  color: '#1d4ed8',
                   weight: 6,
                   opacity: 0.88,
                   lineCap: 'round',
