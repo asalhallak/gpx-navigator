@@ -49,6 +49,8 @@ button:disabled {
 
 .app-shell {
   min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -96,6 +98,7 @@ button:disabled {
 
 .workspace {
   flex: 1;
+  height: calc(100vh - 78px);
   min-height: 0;
   display: grid;
   grid-template-columns: minmax(320px, 390px) minmax(0, 1fr);
@@ -689,14 +692,15 @@ button:disabled {
 .map-shell {
   position: relative;
   min-width: 0;
-  min-height: calc(100vh - 78px);
+  height: 100%;
+  min-height: 0;
   background: #dbe5dc;
 }
 
 .route-map {
   width: 100%;
   height: 100%;
-  min-height: calc(100vh - 78px);
+  min-height: 0;
 }
 
 .map-type-control {
@@ -849,12 +853,18 @@ button:disabled {
 }
 
 @media (max-width: 860px) {
+  .app-shell {
+    height: auto;
+    overflow: visible;
+  }
+
   .app-header {
     align-items: flex-start;
     padding: 14px 16px;
   }
 
   .workspace {
+    height: auto;
     grid-template-columns: 1fr;
   }
 
@@ -865,6 +875,7 @@ button:disabled {
 
   .map-shell,
   .route-map {
+    height: auto;
     min-height: 58vh;
   }
 }
