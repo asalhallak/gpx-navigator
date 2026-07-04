@@ -119,9 +119,9 @@ button:disabled {
 }
 
 .panel-section--fill {
-  flex: 1;
+  flex: 0 0 auto;
   min-height: 0;
-  overflow: auto;
+  overflow: visible;
 }
 
 .section-heading {
