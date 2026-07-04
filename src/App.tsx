@@ -207,29 +207,6 @@ export default function App() {
       <main className="workspace">
         <aside className="side-panel" aria-label="Route controls">
           <section className="panel-section">
-            <RouteUploader disabled={isImporting} onFilesSelected={handleFilesSelected} />
-            {notice ? (
-              <div className={`notice notice--${notice.type}`} role="status">
-                <CircleAlert size={16} aria-hidden="true" />
-                <span>{notice.message}</span>
-              </div>
-            ) : null}
-          </section>
-
-          <section className="panel-section">
-            <div className="section-heading">
-              <h2>Current route</h2>
-              {isImporting ? (
-                <span className="inline-status">
-                  <Loader2 size={16} aria-hidden="true" />
-                  Importing
-                </span>
-              ) : null}
-            </div>
-            <RouteSummary route={activeRoute} />
-          </section>
-
-          <section className="panel-section">
             <div className="section-heading">
               <h2>Car mode</h2>
             </div>
@@ -290,6 +267,29 @@ export default function App() {
                 onDeleteRoute={handleDeleteRoute}
               />
             )}
+          </section>
+
+          <section className="panel-section">
+            <RouteUploader disabled={isImporting} onFilesSelected={handleFilesSelected} />
+            {notice ? (
+              <div className={`notice notice--${notice.type}`} role="status">
+                <CircleAlert size={16} aria-hidden="true" />
+                <span>{notice.message}</span>
+              </div>
+            ) : null}
+          </section>
+
+          <section className="panel-section">
+            <div className="section-heading">
+              <h2>Current route</h2>
+              {isImporting ? (
+                <span className="inline-status">
+                  <Loader2 size={16} aria-hidden="true" />
+                  Importing
+                </span>
+              ) : null}
+            </div>
+            <RouteSummary route={activeRoute} />
           </section>
 
           <section className="panel-section">
